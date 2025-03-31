@@ -1,4 +1,4 @@
-const { JWT_SECRET } = require('./config'); //Clave para firmar los JWT
+const { JWT_SECRET } = require('../config/config'); //Clave para firmar los JWT
 const express = require('express');
 const bcrypt = require('bcryptjs'); // Importamos bcryptjs para cifrar la contraseñas
 const jwt = require('jsonwebtoken'); // Para trabajar con JWT
