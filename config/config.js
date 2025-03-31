@@ -6,6 +6,7 @@ dotenv.config();
 
 module.exports = {
     PORT: 5000,
+    API_URL_PORT: "http://localhost:5000/api/login",
     JWT_SECRET: process.env.JWT_SECRET || "clave_super_secreta",
     DB_USER: process.env.DB_USER,
     DB_PASSWORD: process.env.DB_PASSWORD,
