@@ -1,12 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const UserRouter = require('./routes/UserRouter'); // Las rutas de usuarios
 const TaskRouter = require('./routes/TaskRouter'); // Importamos las rutas de tareas
 
 
-
-dotenv.config(); // Cargar variables de entorno
 
 const app = express();
 const port = process.env.PORT || 5000;

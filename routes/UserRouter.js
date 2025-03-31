@@ -6,6 +6,7 @@ const pool = require('../config/db'); // Importamos el pool para la base de dato
 const UserRouter = express.Router(); // Inicializamos el router
 
 
+
 // Crear un nuevo usuario (incluyendo cifrado de contraseña)
 UserRouter.post('/users', async (req, res) => {
     const { name, email, picture, password } = req.body;
@@ -18,7 +19,8 @@ UserRouter.post('/users', async (req, res) => {
     try {
       // Cifrar la contraseña usando bcryptjs
       const hashedPassword = await bcrypt.hash(password, 10); // El '10' es el número de rondas de sal
-  
+      console.log("hashedPassword:", hashedPassword);
+
       // Guardar el usuario con la contraseña cifrada
       const result = await pool.query(
         'INSERT INTO users (name, email, picture, password) VALUES ($1, $2, $3, $4) RETURNING *',
@@ -28,7 +30,7 @@ UserRouter.post('/users', async (req, res) => {
       res.json(result.rows[0]); // Retornamos el usuario creado
     } catch (error) {
       console.error('Error creando usuario:', error);
-      res.status(500).json({ message: 'Error creando usuario' });
+      res.status(500).json({ message: 'Error creando usuario', errorMessage: error.message });
     }
   });
 
@@ -47,8 +49,8 @@ UserRouter.get('/users/:id', async (req, res) => {
   
       res.json(result.rows[0]); // Retornamos el usuario encontrado
     } catch (error) {
-      console.error('Error obteniendo usuario:', error);
-      res.status(500).json({ message: 'Error obteniendo usuario' });
+      console.error('Error creando usuario:', error.message);
+      res.status(500).json({ message: 'Error creando usuario', error: error.message });
     }
 });
   
