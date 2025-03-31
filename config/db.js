@@ -1,30 +1,15 @@
-const dotenv = require('dotenv');
+const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT } = require('./config'); // Importamos las variables de entorno necesarias
 const { Pool } = require('pg'); // Importamos Pool desde pg para manejar la conexión a la DB
-
-
-
-
-dotenv.config(); // Cargar variables de entorno
-
-
-/*
-console.log("User:", process.env.DB_USER);
-console.log("Host:", process.env.DB_HOST);
-console.log("Database:", process.env.DB_NAME);
-console.log("Password:", process.env.DB_PASSWORD);
-console.log("Port:", process.env.DB_PORT); */
 
 
 // Configuramos la conexión usando las variables de entorno
 const pool = new Pool({
-    user: process.env.DB_USER, // Usuario de la base de datos
-    host: process.env.DB_HOST, // Dirección del servidor PostgreSQL
-    database: process.env.DB_NAME, // Nombre de la base de datos
-    password: process.env.DB_PASSWORD, // Contraseña de la base de datos
-    port: process.env.DB_PORT || 5432, // Puerto del servidor PostgreSQL (default es 5432)
+    user: DB_USER, // Usuario de la base de datos
+    host: DB_HOST, // Dirección del servidor PostgreSQL
+    database: DB_NAME, // Nombre de la base de datos
+    password: DB_PASSWORD, // Contraseña de la base de datos
+    port: DB_PORT || 5432, // Puerto del servidor PostgreSQL (default es 5432)
   });
-
-
 
   
 // Verificamos que la conexión esté funcionando
