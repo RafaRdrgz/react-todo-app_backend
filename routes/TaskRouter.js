@@ -1,5 +1,5 @@
 const express = require('express');
-const authenticateJWT = require('../middleware/authMiddleware'); // Importas el middleware
+const { authenticateJWT } = require('../middleware/authMiddleware'); // Importas el middleware
 const pool = require('../config/db'); // Importamos el pool para la base de datos
 
 

@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET, JWT_REFRESH_SECRET } = require('../config/config'); // Clave secreta JWT
+const { deleteRefreshToken } = require('../controllers/tokenController');
+
 
 // Middleware para verificar el token JWT
 const authenticateJWT = (req, res, next) => {
@@ -11,8 +13,10 @@ const authenticateJWT = (req, res, next) => {
 
   // Verificar el token usando la clave secreta
   jwt.verify(token, JWT_SECRET, (err, user) => {
+
     if (err) {
-      return res.status(401).json({ message: 'Token has expired or is invalid' });
+      const errorMessage = err.name === 'TokenExpiredError' ? 'Token expirado' : 'Token inválido';
+      return res.status(401).json({ message: errorMessage });
     }
 
     req.user = user; // Si es válido, se agrega el usuario al req
@@ -23,6 +27,7 @@ const authenticateJWT = (req, res, next) => {
 
 // Middleware para validar Refresh Token
 const authenticateRefreshJWT = async (req, res, next) => {
+  
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
@@ -32,10 +37,16 @@ const authenticateRefreshJWT = async (req, res, next) => {
     try {
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
+
+
         const result = await pool.query('SELECT * FROM refresh_tokens WHERE token = $1', [refreshToken]);
         if (result.rows.length === 0) {
             return res.status(403).json({ message: 'Refresh token inválido' });
         }
+
+        //Impide reutilización de tokens pero mantiene la sesión en otros dispositivos
+        await deleteRefreshToken(refreshToken);
+
 
         req.user = decoded;
         next();
