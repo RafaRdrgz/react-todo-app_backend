@@ -1,14 +1,15 @@
-const { JWT_SECRET } = require('../config/config'); //Clave para firmar los JWT
 const express = require('express');
 const bcrypt = require('bcryptjs'); // Importamos bcryptjs para cifrar la contraseñas
 const jwt = require('jsonwebtoken'); // Para trabajar con JWT
+const { generateAccessToken, generateRefreshToken, deleteUserTokens, refreshAccessToken } = require('../controllers/tokenController');
 const pool = require('../config/db'); // Importamos el pool para la base de datos
 
 
-const LoginRouter = express.Router(); // Inicializamos el router
+const AuthRouter = express.Router(); // Inicializamos el router
+
 
 //Recibo la petición login del frontend con el usuario y la contraseña a validar
-LoginRouter.post('/login', async (req, res) => {
+AuthRouter.post('/login', async (req, res) => {
 
     const { email, password } = req.body;
 
@@ -30,16 +31,13 @@ LoginRouter.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid user or password' });
         }
 
-        //Generar un token JWT
-        const token = jwt.sign(
-            { id: user.id, email: user.email, name: user.name },
-            JWT_SECRET,
-            { expiresIn: '2h' } // Expira en 2 horas
-        );
+        //Generar token de acceso y de refresco para el usuario
+        const accessToken = generateAccessToken(user);
+        const refreshToken= generateRefreshToken(user);
 
-        //Si todo es correcto:
-        //Enviar el token y los datos del usuario
-        res.json({ token });
+
+        //Retornamos al frontend ambos tokens
+        res.json({ accessToken, refreshToken });
 
     } catch (error) {
 
@@ -48,6 +46,30 @@ LoginRouter.post('/login', async (req, res) => {
 
     }
 });
+
+
+//Logout 
+router.post('/logout', async (req, res) => {
+    const { userId } = req.body;
+    try {
+        await deleteUserTokens(userId);
+        res.json({ message: 'Sesión cerrada correctamente' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error en el servidor' });
+    }
+});
+
+
+//Refrescar Access Token
+router.post('/refresh-token', authenticateRefreshJWT, async (req, res) => {
+    try {
+        const newAccessToken = await refreshAccessToken(req.body.refreshToken);
+        res.json({ accessToken: newAccessToken });
+    } catch (error) {
+        res.status(403).json({ message: error.message });
+    }
+});
+
 
 
 module.exports = LoginRouter;

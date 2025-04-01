@@ -1,43 +1,17 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
+const authenticateJWT = require('../middleware/authMiddleware'); // Importas el middleware
 const pool = require('../config/db'); // Importamos el pool para la base de datos
-const { JWT_TOKEN } = require('../config/config');
 
 
 const TaskRouter = express.Router(); // Inicializamos el router
 
 
-
-// Middleware para autenticar el usuario con JWT
-const authenticateUser = (req, res, next) => {
-
-  const token = req.header('Authorization'); // Leer el token del header
-
-  if (!token) {
-      return res.status(401).json({ message: 'Acceso denegado. Token no proporcionado.' });
-  }
-
-  try {
-
-      const decoded = jwt.verify(token, JWT_SECRET); // Verificamos el token
-      req.user = decoded; // Guardamos la info del usuario en req.user
-      next(); // Pasamos al siguiente middleware o controlador
-
-  } catch (error) {
-
-      res.status(403).json({ message: 'Token inválido' });
-  }
-};
-
-
-
-
-
-
-// Obtener todas las tareas
-TaskRouter.get('/tasks', async (req, res) => {
+// Obtener todas las tareas para un usuario en concreto
+TaskRouter.get('/tasks',authenticateJWT, async (req, res) => {
     try {
-      const result = await pool.query('SELECT * FROM tasks');
+
+      const userId = req.user.id;
+      const result = await pool.query('SELECT * FROM tasks WHERE user_id= $1', [userId]);
       res.json(result.rows); // Retornamos todas las tareas
     } catch (error) {
       console.error('Error obteniendo tareas:', error);
@@ -46,8 +20,9 @@ TaskRouter.get('/tasks', async (req, res) => {
 });
 
 // Crear una nueva tarea
-TaskRouter.post('/tasks', async (req, res) => {
+TaskRouter.post('/tasks',authenticateJWT, async (req, res) => {
     const { userId, title, description } = req.body;
+    
     try {
       const result = await pool.query(
         'INSERT INTO tasks (user_id, title, description) VALUES ($1, $2, $3) RETURNING *',
@@ -63,7 +38,7 @@ TaskRouter.post('/tasks', async (req, res) => {
 
 
 // Eliminar una tarea
-TaskRouter.delete('/tasks/:id', async (req, res) => {
+TaskRouter.delete('/tasks/:id',authenticateJWT, async (req, res) => {
     const { id } = req.params;
   
     try {
@@ -82,7 +57,7 @@ TaskRouter.delete('/tasks/:id', async (req, res) => {
 
 
 // Actualizar una tarea
-TaskRouter.put('/tasks/:id', async (req, res) => {
+TaskRouter.put('/tasks/:id',authenticateJWT, async (req, res) => {
     const { id } = req.params;
     const { title, description, completed } = req.body;
   
