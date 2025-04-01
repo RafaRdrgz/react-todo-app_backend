@@ -39,7 +39,7 @@ LoginRouter.post('/login', async (req, res) => {
 
         //Si todo es correcto:
         //Enviar el token y los datos del usuario
-        res.json({ token, user });
+        res.json({ token });
 
     } catch (error) {
 

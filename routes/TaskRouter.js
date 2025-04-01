@@ -1,41 +1,37 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const pool = require('../config/db'); // Importamos el pool para la base de datos
-
+const { JWT_TOKEN } = require('../config/config');
 
 
 const TaskRouter = express.Router(); // Inicializamos el router
 
 
-// Registrar un nuevo usuario
-TaskRouter.post('/users/register', async (req, res) => {
-  const { name, email, password } = req.body;
 
-  // Verificar si el correo ya existe en la base de datos
-  try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+// Middleware para autenticar el usuario con JWT
+const authenticateUser = (req, res, next) => {
 
-    if (result.rows.length > 0) {
-      return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
-    }
+  const token = req.header('Authorization'); // Leer el token del header
 
-    // Cifrar la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insertar el nuevo usuario en la base de datos
-    const newUser = await pool.query(
-      'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *',
-      [name, email, hashedPassword]
-    );
-
-    res.status(201).json({
-      message: 'Usuario registrado exitosamente',
-      user: newUser.rows[0],
-    });
-  } catch (error) {
-    console.error('Error registrando usuario:', error);
-    res.status(500).json({ message: 'Error registrando usuario' });
+  if (!token) {
+      return res.status(401).json({ message: 'Acceso denegado. Token no proporcionado.' });
   }
-});
+
+  try {
+
+      const decoded = jwt.verify(token, JWT_SECRET); // Verificamos el token
+      req.user = decoded; // Guardamos la info del usuario en req.user
+      next(); // Pasamos al siguiente middleware o controlador
+
+  } catch (error) {
+
+      res.status(403).json({ message: 'Token inválido' });
+  }
+};
+
+
+
+
 
 
 // Obtener todas las tareas

@@ -14,6 +14,8 @@ app.use(cors());
 app.use(express.json()); // Para poder leer JSON en las peticiones
 
 
+
+//Rutas con prefijo /api
 // Ruta de Login de usuarios
 app.use('/api', LoginRouter);
 // Usar las rutas de usuarios
