@@ -1,6 +1,15 @@
 const jwt = require('jsonwebtoken');
-const pool = require('../config/db');
 const { JWT_SECRET, JWT_REFRESH_SECRET } = require('../config/config');
+const { errorController } = require('./errorController');
+
+const {     removeUserRefreshTokens,
+            removeRefreshToken,
+            removeUserExpiredRefreshTokens,
+            getRefreshToken,
+            saveRefreshToken 
+      
+        } = require('../queries/tokenQueries');
+
 
 
 // Generar Access Token (expira en 1hora)
@@ -10,80 +19,99 @@ const generateAccessToken = (user) => {
 
 
 // Generar Refresh Token (expira en 7 días)
-const generateRefreshToken = async (user) => {
+const generateRefreshToken = async (user, next) => {
 
     try{
 
         const newRefreshToken = jwt.sign({ id: user.id }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
         // Primero, eliminamos los tokens antiguos del usuario
-        await deleteUserExpiredRefreshTokens(user.id);
+        await removeUserExpiredRefreshTokens(user.id);
 
         // Guardar el nuevo refresh token con una fecha de expiración
-        await pool.query(
-            'INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, NOW() + INTERVAL \'7 days\')',
-            [user.id, newRefreshToken]
-        );
+        await saveRefreshToken(user.id, newRefreshToken);
 
         return newRefreshToken;
 
 
-    } catch (error) {
-
-        console.error('Error generando Refresh Token:', error);
-        throw new Error('Error generando el refresh token');
-    }
+    } catch (error) { return errorController('Error generando el refresh token', 500, next); }
 
 };
 
 
 // Eliminar todos los refresh tokens de un usuario (al cerrar sesión o crear un nuevo refresh token)
-const deleteUserRefreshTokens = async (userId) => {
-    await pool.query('DELETE FROM refresh_tokens WHERE user_id = $1', [userId]);
+const deleteUserRefreshTokens = async (userId, next) => {
+
+    try {
+        await removeUserRefreshTokens(userId);
+    } catch (error) {
+        console.error('Error eliminando los refresh tokens del usuario:', error);
+        return errorController('Error al eliminar los refresh tokens', 500, next);
+    }
 };
 
 
 // Eliminar un refresh token específico
-const deleteRefreshToken = async (token) => {
-    await pool.query('DELETE FROM refresh_tokens WHERE token = $1', [token]);
+const deleteRefreshToken = async (refreshToken, next) => {
+
+    try {
+        await removeRefreshToken(refreshToken);
+    } catch (error) {
+        console.error('Error eliminando el refresh token:', error);
+        return errorController('Error al eliminar el refresh token', 500, next);
+    }
+
 };
 
-//Eliminar refresh tokens expirados
-const deleteUserExpiredRefreshTokens = async (userId) => {
+//Eliminar refresh tokens expirados del usuario
+const deleteExpiredRefreshTokens = async (userId, next) => {
 
-    await pool.query('DELETE FROM refresh_tokens WHERE user_id = $1 AND expires_at < NOW()', [userId]);
+    try {
+        await removeUserExpiredRefreshTokens(userId);
+    } catch (error) {
+        console.error('Error eliminando los refresh tokens expirados:', error);
+        return errorController('Error al eliminar los refresh tokens expirados', 500, next);
+    }
 
 }
 
 
 // Validar Refresh Token y generar nuevo Access Token
-const refreshAccessToken = async (refreshToken) => {
+const refreshAccessToken = async (refreshToken, next) => {
+
+    if (!refreshToken) return errorController('No refresh token provided', 401, next);
 
     try {
         // Verificar el refresh token
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
         // Buscar en la base de datos
-        const result = await pool.query('SELECT * FROM refresh_tokens WHERE token = $1', [refreshToken]);
+        const tokenData = await getRefreshToken(refreshToken);
 
-        if (result.rows.length === 0) {
-            throw new Error('Refresh token inválido');
+        // Me aseguro de que la consulta obtiene un resultado y que el token pertenece al usuario
+        if (!tokenData || tokenData.user_id !== decoded.id) {
+            return errorController('Refresh token inválido', 403, next);
         }
 
-        const userId = result.rows[0].user_id;
-
-        // Doble verificación: asegurarse de que el token pertenece al usuario
-        if (userId !== decoded.id) {
-            throw new Error('Refresh token inválido');
-        }
-        
         // Generar nuevo access token
-        const newAccessToken = generateAccessToken({ id: userId });
+        const newAccessToken = generateAccessToken({ id: decoded.id });
 
         return newAccessToken;
 
     } catch (error) {
-        throw new Error('Refresh token expirado o inválido');
+        
+        let message = 'Error al procesar el refresh token.';
+        let status = 500;
+
+        if (error.name === 'TokenExpiredError') {
+            message = 'El refresh token ha expirado.';
+            status = 403;
+        } else if (error.name === 'JsonWebTokenError') {
+            message = 'Refresh token inválido.';
+            status = 403;
+        }
+        
+        return errorController(message, status, next);
     }
 
 };
@@ -93,6 +121,7 @@ module.exports = {
 
     generateAccessToken,
     generateRefreshToken,
+    deleteExpiredRefreshTokens,
     deleteUserRefreshTokens,
     deleteRefreshToken,
     refreshAccessToken

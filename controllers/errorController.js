@@ -1,5 +1,4 @@
 
-
 const errorController = (message, status, next) => {
 
     const error = new Error(message);
@@ -11,4 +10,4 @@ const errorController = (message, status, next) => {
 }
 
 
-module.exports = {  errorController };
+module.exports = { errorController };
