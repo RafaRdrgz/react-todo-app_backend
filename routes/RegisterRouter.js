@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs'); // Importamos bcryptjs para cifrar la contraseña
 const { errorController } = require('../controllers/errorController');
 const { generateAccessToken, generateRefreshToken } = require('../controllers/tokenController');
-const { userExists } = require('../queries/userQueries');
+const { userExists, createUser } = require('../queries/userQueries');
 const { validateEmail } = require('../utils/validators');
 
 const RegisterRouter = express.Router(); // Inicializamos el router
@@ -44,8 +44,8 @@ RegisterRouter.post('/register', async (req, res) => {
     const newUser = await createUser(name, email, picture, hashedPassword, google_id, auth_provider);
 
     // Generar los tokens
-    const accessToken = await generateAccessToken(newUser);
-    const refreshToken = await generateRefreshToken(newUser);
+    const accessToken = await generateAccessToken(newUser, next);
+    const refreshToken = await generateRefreshToken(newUser, next);
 
     // Devolver la respuesta con el usuario y los tokens
     return res.status(201).json({ message: 'Usuario registrado con éxito', newUser, accessToken, refreshToken });

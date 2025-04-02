@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET, JWT_REFRESH_SECRET } = require('../config/config'); // Clave secreta JWT
-const { deleteRefreshToken } = require('../controllers/tokenController');
+const { deleteRefreshToken , getRefreshToken } = require('../controllers/tokenController');
 const { errorController } = require ('../controllers/errorController');
-const pool = require('../config/db'); // Importamos el pool para la base de datos
+const { getRefreshToken } = require('../queries/tokenQueries');
 
 
 // Función reutilizable para comprobar si el refresh token existe en la base de datos
@@ -16,7 +16,6 @@ const authenticateJWT = (req, res, next) => {
 
   const authHeader = req.headers.authorization;
   //console.log('Authorization Header:', authHeader);
-
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) { return errorController('Fallo en headers, formato incorrecto.', 403, next); } //Manejo de headers erróneos o inexistentes
 
@@ -52,7 +51,7 @@ const authenticateRefreshJWT = async (req, res, next) => {
 
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
-        const isTokenValid = await checkRefreshTokenInDb(refreshToken);
+        const isTokenValid = await getRefreshToken(refreshToken);
 
         if (!isTokenValid) {
 

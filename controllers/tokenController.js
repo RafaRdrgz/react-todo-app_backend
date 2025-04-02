@@ -13,9 +13,14 @@ const {     removeUserRefreshTokens,
 
 
 // Generar Access Token (expira en 1hora)
-const generateAccessToken = (user) => {
-    return jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '1h' });
-  };
+const generateAccessToken = async (user,next) => {
+
+    try {
+    
+        return jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '1h' });
+
+    } catch (error) { return errorController('Error generando el access token', 500, next); }
+};
 
 
 // Generar Refresh Token (expira en 7 días)
@@ -94,13 +99,13 @@ const refreshAccessToken = async (refreshToken, next) => {
         }
 
         // Generar nuevo access token
-        const newAccessToken = generateAccessToken({ id: decoded.id });
+        const newAccessToken = await generateAccessToken({ id: decoded.id }, next);
 
         return newAccessToken;
 
     } catch (error) {
         
-        let message = 'Error al procesar el refresh token.';
+        let message = 'Error al generar el access token.';
         let status = 500;
 
         if (error.name === 'TokenExpiredError') {
@@ -118,7 +123,7 @@ const refreshAccessToken = async (refreshToken, next) => {
 
 
 module.exports = {
-
+    
     generateAccessToken,
     generateRefreshToken,
     deleteExpiredRefreshTokens,
