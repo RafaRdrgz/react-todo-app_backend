@@ -44,6 +44,22 @@ const generateRefreshToken = async (user, next) => {
 };
 
 
+const existsRefreshToken = async (refreshToken,next) => {
+
+    try {
+        const tokenData = await getRefreshToken(refreshToken);
+
+        if(tokenData != null ){ return tokenData }
+
+        return null;
+        
+    } catch (error) {
+        console.error('Error eliminando los refresh tokens del usuario:', error);
+        return errorController('Error al eliminar los refresh tokens', 500, next);
+    }
+
+}
+
 // Eliminar todos los refresh tokens de un usuario (al cerrar sesión o crear un nuevo refresh token)
 const deleteUserRefreshTokens = async (userId, next) => {
 
@@ -91,7 +107,7 @@ const refreshAccessToken = async (refreshToken, next) => {
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
         // Buscar en la base de datos
-        const tokenData = await getRefreshToken(refreshToken);
+        const tokenData = await getRefreshToken(refreshToken,next);
 
         // Me aseguro de que la consulta obtiene un resultado y que el token pertenece al usuario
         if (!tokenData || tokenData.user_id !== decoded.id) {
@@ -126,6 +142,7 @@ module.exports = {
     
     generateAccessToken,
     generateRefreshToken,
+    existsRefreshToken,
     deleteExpiredRefreshTokens,
     deleteUserRefreshTokens,
     deleteRefreshToken,

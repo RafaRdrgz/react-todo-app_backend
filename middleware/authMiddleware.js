@@ -1,15 +1,9 @@
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET, JWT_REFRESH_SECRET } = require('../config/config'); // Clave secreta JWT
-const { deleteRefreshToken , getRefreshToken } = require('../controllers/tokenController');
+const { deleteRefreshToken, existsRefreshToken } = require('../controllers/tokenController');
 const { errorController } = require ('../controllers/errorController');
-const { getRefreshToken } = require('../queries/tokenQueries');
 
 
-// Función reutilizable para comprobar si el refresh token existe en la base de datos
-const checkRefreshTokenInDb = async (refreshToken) => {
-  const result = await pool.query('SELECT * FROM refresh_tokens WHERE token = $1', [refreshToken]);
-  return result.rows.length > 0;
-};
 
 // Middleware para verificar el token JWT
 const authenticateJWT = (req, res, next) => {
@@ -51,7 +45,7 @@ const authenticateRefreshJWT = async (req, res, next) => {
 
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
-        const isTokenValid = await getRefreshToken(refreshToken);
+        const isTokenValid = await existsRefreshToken(refreshToken, next);
 
         if (!isTokenValid) {
 
