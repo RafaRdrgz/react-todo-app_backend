@@ -115,9 +115,9 @@ const refreshAccessToken = async (refreshToken, next) => {
         }
 
         // Generar nuevo access token
-        const newAccessToken = await generateAccessToken({ id: decoded.id }, next);
+        const accessToken = await generateAccessToken({ id: decoded.id }, next);
 
-        return newAccessToken;
+        return accessToken;
 
     } catch (error) {
         

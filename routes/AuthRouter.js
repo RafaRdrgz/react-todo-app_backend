@@ -1,39 +1,20 @@
 const express = require('express');
 const { errorController } = require('../controllers/errorController');
-const { generateAccessToken, generateRefreshToken, deleteUserRefreshTokens, refreshAccessToken } = require('../controllers/tokenController');
+const { loginUser, logoutUser, newAccessToken } = require('../controllers/authController');
 const {  authenticateJWT,authenticateRefreshJWT } = require('../middleware/authMiddleware');
-const pool = require('../config/db'); // Importamos el pool para la base de datos
-const { isPasswordValid } = require('../utils/validators');
 
 
 const AuthRouter = express.Router(); // Inicializamos el router
 
 
-//Recibo la petición login del frontend con el usuario y la contraseña a validar
-AuthRouter.post('/login', async (req, res) => {
+//Recibo la petición login del frontend con el usuario y la contraseña a validar y devuelvo los tokens
+AuthRouter.post('/login', async (req, res, next) => {
 
     const { email, password } = req.body;
 
     try {
 
-        //Verificar si el usuario existe en la base de datos
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
-        if (result.rows.length === 0) { return errorController('Usuario no encontrado', 401, next); }
-
-        const user = result.rows[0];
-
-        if (!password || password.trim() === "") { return errorController('Contraseña no proporcionada', 401, next); }
-        
-
-        //Comparar la contraseña ingresada con la almacenada
-        const validPassword = await isPasswordValid(password,user.password);
-
-        if (!validPassword) { return errorController('Contraseña incorrecta', 401, next); }
-
-        //Generar token de acceso y de refresco para el usuario
-        const accessToken = await generateAccessToken(user);
-        const refreshToken= await generateRefreshToken(user);
+        const {accessToken, refreshToken } = await loginUser(email,password,next);
 
         //Retornamos al frontend ambos tokens
         return res.json({ accessToken, refreshToken });
@@ -48,15 +29,15 @@ AuthRouter.post('/login', async (req, res) => {
 
 
 //Logout 
-AuthRouter.post('/logout', authenticateJWT , async (req, res) => {
+AuthRouter.post('/logout', authenticateJWT , async (req, res, next) => {
 
     const userId = req.user.id; // Tomar el ID del usuario desde el req.user de authenticateJWT
 
     try {
 
-        await deleteUserRefreshTokens(userId);
+        const { message } = await logoutUser(userId,next);
         //console.log("cerrando sesión correctamente");
-        res.json({ message: 'Sesión cerrada correctamente' });
+        res.json({ message });
 
     } catch (error) { return errorController('Error al cerrar sesión', 500, next); }
 
@@ -64,13 +45,14 @@ AuthRouter.post('/logout', authenticateJWT , async (req, res) => {
 
 
 //Refrescar Access Token
-AuthRouter.post('/refresh-token', authenticateRefreshJWT , async (req, res) => {
+AuthRouter.post('/refresh-token', authenticateRefreshJWT , async (req, res, next) => {
     try {
 
         const { refreshToken } = req.body;
-        const newAccessToken = await refreshAccessToken(refreshToken);
+        
+        const accessToken = await newAccessToken(refreshToken, next);
 
-        res.json({ accessToken: newAccessToken });
+        return res.json({ accessToken });
 
     } catch (error) {
 

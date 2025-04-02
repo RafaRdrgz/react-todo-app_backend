@@ -1,7 +1,6 @@
 const express = require('express');
 const { authenticateJWT } = require('../middleware/authMiddleware'); // Importas el middleware
 const { validateTask } = require('../middleware/tasksMiddleware');
-const pool = require('../config/db'); // Importamos el pool para la base de datos
 
 
 const TaskRouter = express.Router(); // Inicializamos el router

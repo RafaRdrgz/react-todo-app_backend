@@ -1,5 +1,4 @@
 const express = require('express');
-const bcrypt = require('bcryptjs'); // Importamos bcryptjs para cifrar la contraseña
 const { errorController } = require('../controllers/errorController');
 const { generateAccessToken, generateRefreshToken } = require('../controllers/tokenController');
 const { userExists, createUser } = require('../queries/userQueries');
