@@ -1,5 +1,6 @@
 const express = require('express');
 const { authenticateJWT } = require('../middleware/authMiddleware'); // Importas el middleware
+const { validateTask } = require('../middleware/tasksMiddleware');
 const pool = require('../config/db'); // Importamos el pool para la base de datos
 
 
@@ -12,26 +13,34 @@ TaskRouter.get('/tasks',authenticateJWT, async (req, res) => {
 
       const userId = req.user.id;
       const result = await pool.query('SELECT * FROM tasks WHERE user_id= $1', [userId]);
+
       res.json(result.rows); // Retornamos todas las tareas
+
     } catch (error) {
-      console.error('Error obteniendo tareas:', error);
-      res.status(500).json({ message: 'Error obteniendo tareas' });
+
+      next(error);
+
     }
 });
 
 // Crear una nueva tarea
-TaskRouter.post('/tasks',authenticateJWT, async (req, res) => {
-    const { userId, title, description } = req.body;
+TaskRouter.post('/tasks', authenticateJWT, validateTask , async (req, res) => {
+    const {title, description, completed } = req.body;
+
+    const userId = req.user.id; // Si authenticate JWT valida el token, tendremos el userId en req.user
     
     try {
+
       const result = await pool.query(
-        'INSERT INTO tasks (user_id, title, description) VALUES ($1, $2, $3) RETURNING *',
-        [userId, title, description]
+        'INSERT INTO tasks (user_id, title, description, completed) VALUES ($1, $2, $3, $4) RETURNING *',
+        [userId, title, description, completed]
       );
+
       res.json(result.rows[0]); // Retornamos la tarea creada
+
     } catch (error) {
-      console.error('Error creando tarea:', error);
-      res.status(500).json({ message: 'Error creando tarea' });
+
+      next(error);
     }
   });
 

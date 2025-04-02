@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { errorMiddleware } = require('./middleware/errorMiddleware');
 const { PORT } = require('./config/config'); //Configuración variable de entorno
 const RegisterRouter = require('./routes/RegisterRouter'); //Authentication router
 const AuthRouter = require('./routes/AuthRouter'); //Authentication router
@@ -21,10 +22,15 @@ app.use('/api', RegisterRouter);
 // Usar las rutas de tareas
 app.use('/api', TaskRouter);
 
+//Middleware de manejo de errores
+app.use(errorMiddleware);
+
 // Ruta de prueba
 app.get('/', (req, res) => {
     res.send('¡Servidor Backend funcionando!');
   });
+
+
 
 
 app.listen(port, () => {
