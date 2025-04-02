@@ -48,6 +48,7 @@ const deleteRefreshToken = async (token) => {
     await pool.query('DELETE FROM refresh_tokens WHERE token = $1', [token]);
 };
 
+//Eliminar refresh tokens expirados
 const deleteUserExpiredRefreshTokens = async (userId) => {
 
     await pool.query('DELETE FROM refresh_tokens WHERE user_id = $1 AND expires_at < NOW()', [userId]);

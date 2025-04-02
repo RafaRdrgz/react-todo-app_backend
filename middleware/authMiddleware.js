@@ -5,7 +5,17 @@ const { deleteRefreshToken } = require('../controllers/tokenController');
 
 // Middleware para verificar el token JWT
 const authenticateJWT = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', ''); // Obtener token desde el header
+
+  const authHeader = req.headers.authorization;
+  //console.log('Authorization Header:', authHeader);
+
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(403).json({ message: 'Fallo en headers' });
+  }
+
+
+  const token = authHeader.split(' ')[1]; // Obtener token desde el header
 
   if (!token) {
     return res.status(401).json({ message: 'No token provided' });

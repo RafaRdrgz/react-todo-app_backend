@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs'); // Importamos bcryptjs para cifrar la contraseñas
-const { generateAccessToken, generateRefreshToken, deleteUserTokens, refreshAccessToken } = require('../controllers/tokenController');
+const { generateAccessToken, generateRefreshToken, deleteUserRefreshTokens, refreshAccessToken } = require('../controllers/tokenController');
 const {  authenticateJWT,authenticateRefreshJWT } = require('../middleware/authMiddleware');
 const pool = require('../config/db'); // Importamos el pool para la base de datos
 
@@ -55,9 +55,12 @@ AuthRouter.post('/login', async (req, res) => {
 
 //Logout 
 AuthRouter.post('/logout', authenticateJWT , async (req, res) => {
-    const { userId } = req.body;
+
+    const userId = req.user.id; // Tomar el ID del usuario desde el req.user de authenticateJWT
+
     try {
-        await deleteUserTokens(userId);
+        await deleteUserRefreshTokens(userId);
+        //console.log("cerrando sesión correctamente");
         res.json({ message: 'Sesión cerrada correctamente' });
     } catch (error) {
         res.status(500).json({ message: 'Error en el servidor' });
