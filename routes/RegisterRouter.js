@@ -11,7 +11,9 @@ RegisterRouter.post('/register', async (req, res,next) => {
 
  try{
 
-      return await registerUser(name, email, picture, password, google_id, auth_provider,next);
+     const respuesta = await registerUser(name, email, picture, password, google_id, auth_provider,next);
+
+     res.json(respuesta);
 
  } catch(error){
 

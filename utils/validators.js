@@ -12,4 +12,4 @@ const validateEmail = (email) => {
 const isPasswordValid= async (password, userPassword) => {return await bcrypt.compare(password, userPassword);}
 
 
-module.exports = { validateEmail, checkIfUserExists, isPasswordValid };
+module.exports = { validateEmail, isPasswordValid };

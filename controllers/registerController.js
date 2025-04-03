@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const { errorController } = require('./errorController');
 const { generateAccessToken, generateRefreshToken } = require('./tokenController');
 const { userExists, createUser } = require('../queries/userQueries');
