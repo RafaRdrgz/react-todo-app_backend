@@ -18,9 +18,6 @@ const validateTask = (req, res, next) => {
         
     }
 
-    // Si "completed" es proporcionado, debe ser un booleano
-    if (completed !== undefined && typeof completed !== 'boolean') { return errorController('El campo "Completado" debe ser un valor booleano.', 400, next); }
-
     next();
 }
 

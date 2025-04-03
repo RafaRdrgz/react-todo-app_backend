@@ -1,90 +1,96 @@
 const express = require('express');
 const { authenticateJWT } = require('../middleware/authMiddleware'); // Importas el middleware
 const { validateTask } = require('../middleware/tasksMiddleware');
+const { errorController } = require('../controllers/errorController');
+const { newTask, deleteTask, updateTask } = require('../controllers/taskController');
 
 
 const TaskRouter = express.Router(); // Inicializamos el router
 
 
-// Obtener todas las tareas para un usuario en concreto
-TaskRouter.get('/tasks',authenticateJWT, async (req, res) => {
-    try {
-
-      const userId = req.user.id;
-      const result = await pool.query('SELECT * FROM tasks WHERE user_id= $1', [userId]);
-
-      res.json(result.rows); // Retornamos todas las tareas
-
-    } catch (error) {
-
-      next(error);
-
-    }
-});
-
 // Crear una nueva tarea
-TaskRouter.post('/tasks', authenticateJWT, validateTask , async (req, res) => {
-    const {title, description, completed } = req.body;
+TaskRouter.post('/tasks', authenticateJWT, validateTask , async (req, res,next) => {
+  
+  const userId = req.user.id; // Si authenticate JWT valida el token, tendremos el userId en req.user
+  const {title, description, completed } = req.body;
 
-    const userId = req.user.id; // Si authenticate JWT valida el token, tendremos el userId en req.user
-    
-    try {
+  try {
 
-      const result = await pool.query(
-        'INSERT INTO tasks (user_id, title, description, completed) VALUES ($1, $2, $3, $4) RETURNING *',
-        [userId, title, description, completed]
-      );
+      const nuevaTarea = await newTask(title, description, completed, userId, next);
+      res.json(nuevaTarea); // Retornamos la tarea creada
 
-      res.json(result.rows[0]); // Retornamos la tarea creada
+  } catch (error) {
 
-    } catch (error) {
+    return errorController('Error al crear la tarea', 500, next); // Usar el errorController
+  }
 
-      next(error);
-    }
-  });
-
+});
 
 
 // Eliminar una tarea
-TaskRouter.delete('/tasks/:id',authenticateJWT, async (req, res) => {
-    const { id } = req.params;
-  
-    try {
-      const result = await pool.query('DELETE FROM tasks WHERE id = $1 RETURNING *', [id]);
-      
-      if (result.rowCount === 0) {
-        return res.status(404).json({ message: 'Tarea no encontrada' });
-      }
-  
-      res.json({ message: 'Tarea eliminada' });
-    } catch (error) {
-      console.error('Error eliminando tarea:', error);
-      res.status(500).json({ message: 'Error eliminando tarea' });
-    }
+TaskRouter.delete('/tasks/:id',authenticateJWT, async (req, res, next) => {
+
+  const userId = req.user.id; // Si authenticate JWT valida el token, tendremos el userId en req.user
+  const { id } = req.params; // id de la tarea
+
+  try {
+
+    const message = await deleteTask(id, userId);
+
+    res.json(message);
+
+  } catch (error) {
+        console.error('Error eliminando tarea:', error);
+        return errorController('Error al eliminar la tarea', 500, next);
+  }
+
 });
 
 
 // Actualizar una tarea
-TaskRouter.put('/tasks/:id',authenticateJWT, async (req, res) => {
-    const { id } = req.params;
-    const { title, description, completed } = req.body;
-  
+TaskRouter.put('/tasks/:id',authenticateJWT, async (req, res, next) => {
+
+  const userId = req.user.id; // Si authenticate JWT valida el token, tendremos el userId en req.user
+  const { id } = req.params; //id de la tarea
+  const { title, description, completed } = req.body;
+
+  try {
+    const updated = await updateTask(title, description, completed, id , userId, userId, next);
+
+    res.json(updated); // Retornamos la tarea actualizada
+
+  } catch (error) {
+    console.error('Error actualizando tarea:', error);
+    res.status(500).json({ message: 'Error actualizando tarea' });
+  }
+});
+
+// Obtener todas las tareas para un usuario en concreto
+TaskRouter.get('/tasks',authenticateJWT, async (req, res, next) => {
     try {
-      const result = await pool.query(
-        'UPDATE tasks SET title = $1, description = $2, completed = $3, updated_at = NOW() WHERE id = $4 RETURNING *',
-        [title, description, completed, id]
-      );
-      
-      if (result.rowCount === 0) {
-        return res.status(404).json({ message: 'Tarea no encontrada' });
-      }
-  
-      res.json(result.rows[0]); // Retornamos la tarea actualizada
+
+      const userId = req.user.id;
+
+      const tasks = await tasksByUser(userId, next);
+
+      res.json(tasks); // Retornamos todas las tareas
+
     } catch (error) {
-      console.error('Error actualizando tarea:', error);
-      res.status(500).json({ message: 'Error actualizando tarea' });
+
+      console.error('Error obteniendo tareas:', error);
+      return errorController('Error al obtener tareas', 500, next);
+
     }
-  });
+});
+
+
+
+
+
+
+
+
+
 
 
   module.exports = TaskRouter;
