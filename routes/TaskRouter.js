@@ -9,7 +9,7 @@ const TaskRouter = express.Router(); // Inicializamos el router
 
 
 // Crear una nueva tarea
-TaskRouter.post('/tasks', authenticateJWT, validateTask , async (req, res,next) => {
+TaskRouter.post('/tasks/new', authenticateJWT, validateTask , async (req, res,next) => {
   
   const userId = req.user.id; // Si authenticate JWT valida el token, tendremos el userId en req.user
   const {title, description, completed } = req.body;
@@ -28,14 +28,14 @@ TaskRouter.post('/tasks', authenticateJWT, validateTask , async (req, res,next) 
 
 
 // Eliminar una tarea
-TaskRouter.delete('/tasks/:id',authenticateJWT, async (req, res, next) => {
+TaskRouter.delete('/tasks/delete/:taskId',authenticateJWT, async (req, res, next) => {
 
   const userId = req.user.id; // Si authenticate JWT valida el token, tendremos el userId en req.user
-  const { id } = req.params; // id de la tarea
+  const { taskId } = req.params; // id de la tarea
 
   try {
 
-    const message = await deleteTask(id, userId);
+    const message = await deleteTask(taskId, userId);
 
     res.json(message);
 
@@ -48,14 +48,14 @@ TaskRouter.delete('/tasks/:id',authenticateJWT, async (req, res, next) => {
 
 
 // Actualizar una tarea
-TaskRouter.put('/tasks/:id',authenticateJWT, async (req, res, next) => {
+TaskRouter.put('/tasks/update/:taskId',authenticateJWT, async (req, res, next) => {
 
   const userId = req.user.id; // Si authenticate JWT valida el token, tendremos el userId en req.user
-  const { id } = req.params; //id de la tarea
+  const { taskId } = req.params; //id de la tarea
   const { title, description, completed } = req.body;
 
   try {
-    const updated = await updateTask(title, description, completed, id, userId, next);
+    const updated = await updateTask(title, description, completed, taskId, userId, next);
 
     res.json(updated); // Retornamos la tarea actualizada
 
@@ -64,6 +64,8 @@ TaskRouter.put('/tasks/:id',authenticateJWT, async (req, res, next) => {
     res.status(500).json({ message: 'Error actualizando tarea' });
   }
 });
+
+
 
 // Obtener todas las tareas para un usuario en concreto
 TaskRouter.get('/tasks',authenticateJWT, async (req, res, next) => {
