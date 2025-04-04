@@ -2,7 +2,7 @@ const express = require('express');
 const { authenticateJWT } = require('../middleware/authMiddleware'); // Importas el middleware
 const { validateTask } = require('../middleware/tasksMiddleware');
 const { errorController } = require('../controllers/errorController');
-const { newTask, deleteTask, updateTask } = require('../controllers/taskController');
+const { newTask, deleteTask, updateTask, tasksByUser} = require('../controllers/taskController');
 
 
 const TaskRouter = express.Router(); // Inicializamos el router
@@ -55,7 +55,7 @@ TaskRouter.put('/tasks/:id',authenticateJWT, async (req, res, next) => {
   const { title, description, completed } = req.body;
 
   try {
-    const updated = await updateTask(title, description, completed, id , userId, userId, next);
+    const updated = await updateTask(title, description, completed, id, userId, next);
 
     res.json(updated); // Retornamos la tarea actualizada
 

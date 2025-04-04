@@ -50,7 +50,7 @@ const updateTask = async (title, description, completed, taskId, userId, next) =
 
     try {
 
-        const updated = await updateTaskByIds(title, description, completed, taskId, userId, userId)
+        const updated = await updateTaskByIds(title, description, completed, taskId, userId)
 
         return updated;
       } catch (error) {
