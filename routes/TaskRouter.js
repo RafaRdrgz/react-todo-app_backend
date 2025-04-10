@@ -9,7 +9,7 @@ const TaskRouter = express.Router(); // Inicializamos el router
 
 
 // Crear una nueva tarea
-TaskRouter.post('/tasks/new', authenticateJWT, validateTask , async (req, res,next) => {
+TaskRouter.post('/tasks/new', authenticateJWT, validateTask , async (req, res, next) => {
   
   const userId = req.user.id; // Si authenticate JWT valida el token, tendremos el userId en req.user
   const {title, description, completed } = req.body;
@@ -69,6 +69,7 @@ TaskRouter.put('/tasks/update/:taskId',authenticateJWT, async (req, res, next) =
 
 // Obtener todas las tareas para un usuario en concreto
 TaskRouter.get('/tasks',authenticateJWT, async (req, res, next) => {
+
     try {
 
       const userId = req.user.id;
@@ -83,16 +84,8 @@ TaskRouter.get('/tasks',authenticateJWT, async (req, res, next) => {
       return errorController('Error al obtener tareas', 500, next);
 
     }
+
 });
 
 
-
-
-
-
-
-
-
-
-
-  module.exports = TaskRouter;
+module.exports = TaskRouter;

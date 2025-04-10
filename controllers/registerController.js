@@ -5,7 +5,7 @@ const { userExists, createUser } = require('../queries/userQueries');
 const { validateEmail } = require('../utils/validators');
 
 
-const registerUser = async (name, email, picture, password, google_id, auth_provider, next) => {
+const registerUser = async (name, email, password, google_id, auth_provider, next) => {
 
   // Validar que el correo electrónico tenga un formato correcto
   if (!email || !validateEmail(email)){ return errorController('Correo electrónico inválido', 400, next); }
@@ -56,7 +56,7 @@ const registerUser = async (name, email, picture, password, google_id, auth_prov
     if (exists) { return errorController('El correo ya está registrado', 400, next); }
 
     // Insertar el nuevo usuario en la base de datos
-    const newUser = await createUser(name, email, picture, hashedPassword, google_id, auth_provider);
+    const newUser = await createUser(name, email, hashedPassword, google_id, auth_provider);
 
     // Generar los tokens
     const accessToken = await generateAccessToken(newUser, next);

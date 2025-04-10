@@ -7,11 +7,11 @@ const RegisterRouter = express.Router(); // Inicializamos el router
 // Crear un nuevo usuario (registro)
 RegisterRouter.post('/register', async (req, res,next) => {
 
-  const { name, email, picture, password, google_id, auth_provider } = req.body;
+  const { name, email, password, google_id, auth_provider } = req.body;
 
  try{
 
-     const respuesta = await registerUser(name, email, picture, password, google_id, auth_provider,next);
+     const respuesta = await registerUser(name, email, password, google_id, auth_provider, next);
 
      res.json(respuesta);
 
