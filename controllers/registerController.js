@@ -12,8 +12,7 @@ const registerUser = async (name, email, password, google_id, auth_provider, nex
 
   //por defecto, la hashedPassword será null por si el auth_provider no es 'local'
   let hashedPassword = null;
-
-
+  let g_id = null;
   // Si el proveedor de autenticación esta presente y es "local", la contraseña es obligatoria
   if (auth_provider) {
 
@@ -33,6 +32,8 @@ const registerUser = async (name, email, password, google_id, auth_provider, nex
           if (!google_id) {
             return errorController('Se requiere google_id para autenticación Google', 400, next);
           }
+
+          g_id = google_id
           // Aquí puedes agregar la lógica para crear un usuario con Google (sin contraseña)
           /* DE MOMENTO NO TOCAR */
           break;
@@ -56,14 +57,18 @@ const registerUser = async (name, email, password, google_id, auth_provider, nex
     if (exists) { return errorController('El correo ya está registrado', 400, next); }
 
     // Insertar el nuevo usuario en la base de datos
-    const newUser = await createUser(name, email, hashedPassword, google_id, auth_provider);
+    const newUser = await createUser(name, email, hashedPassword, g_id, auth_provider);
 
     // Generar los tokens
     const accessToken = await generateAccessToken(newUser, next);
     const refreshToken = await generateRefreshToken(newUser, next);
 
+    //console.log(newUser);
+    //console.log(accessToken);
+    //console.log(refreshToken);
+
     // Devolver la respuesta con el usuario y los tokens
-    return { message: 'Usuario registrado con éxito', newUser, accessToken, refreshToken };
+    return { message: 'Usuario registrado con éxito', newUser , accessToken, refreshToken };
 
 
   } catch(error){

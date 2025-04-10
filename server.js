@@ -18,7 +18,7 @@ app.use(express.json()); // Para poder leer JSON en las peticiones
 // Ruta de Login de usuarios
 app.use('/api/auth', AuthRouter);
 // Ruta para registrar usuarios
-app.use('/api', RegisterRouter);
+app.use('/api/auth', RegisterRouter);
 // Usar las rutas de tareas
 app.use('/api', TaskRouter);
 
@@ -26,12 +26,13 @@ app.use('/api', TaskRouter);
 app.use(errorMiddleware);
 
 // Ruta de prueba
+
+/*
 app.get('/', (req, res) => {
     res.send('¡Servidor Backend funcionando!');
   });
 
-
-
+*/
 
 app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);

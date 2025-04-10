@@ -29,7 +29,7 @@ const getUserByEmail = async (email) => {
 
 const createUser = async (name, email, password, google_id, auth_provider) => {
     const result = await pool.query(
-      'INSERT INTO users (name, email, password, google_id, auth_provider) VALUES ($1, $2, $3, $4, $5,) RETURNING id, name, email, picture',
+      'INSERT INTO users (name, email, password, google_id, auth_provider) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email',
       [name, email, password, google_id, auth_provider]
     );
     return result.rows[0]; // Devuelve el usuario creado

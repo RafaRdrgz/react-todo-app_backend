@@ -28,7 +28,7 @@ const updateTaskByIds = async (title, description, completed, taskId, userId) =>
 
 
     const result = await pool.query(
-      'UPDATE tasks SET title = $1, description = $2, completed = $3, WHERE id = $4 AND user_id = $5 RETURNING *',
+      'UPDATE tasks SET title = $1, description = $2, completed = $3 WHERE id = $4 AND user_id = $5 RETURNING *',
       [title, description, completed, taskId, userId]
     );
     return result.rows[0]; // Devolvemos la tarea actualizada

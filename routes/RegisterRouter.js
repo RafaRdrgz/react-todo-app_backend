@@ -11,6 +11,7 @@ RegisterRouter.post('/register', async (req, res,next) => {
 
  try{
 
+      console.log(name, email, password, google_id, auth_provider);
      const respuesta = await registerUser(name, email, password, google_id, auth_provider, next);
 
      res.json(respuesta);
