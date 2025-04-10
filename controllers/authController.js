@@ -43,13 +43,9 @@ const googleUser = async (name, email, google_id, next) =>{
 
         // Si el usuario no existe, lo creamos
         if (!user) {
-        user = await createUser({
-            name: name,  // O usar `name` si se pasa también desde req.user
-            email: email,
-            password: null,          // No hay contraseña porque es Google login
-            google_id: google_id,
-            auth_provider: 'google'
-        });
+
+            user = await createUser(name, email, null, google_id, 'google');
+
         } else {
 
             // Si existe pero no tiene google_id asociado, error o actualización (según tu lógica)
