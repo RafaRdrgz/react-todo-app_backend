@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET, JWT_REFRESH_SECRET } = require('../config/config'); // Clave secreta JWT
+const { JWT_SECRET, JWT_REFRESH_SECRET, GOOGLE_CLIENT_ID } = require('../config/config'); // Clave secreta JWT
 const { deleteRefreshToken, existsRefreshToken } = require('../controllers/tokenController');
 const { errorController } = require ('../controllers/errorController');
-
+const { OAuth2Client } = require('google-auth-library');
 
 
 // Middleware para verificar el token JWT
@@ -83,6 +83,45 @@ const authenticateRefreshJWT = async (req, res, next) => {
     return errorController(message, status, next);
 
     }
+
+
+  
 };
 
-module.exports = { authenticateJWT , authenticateRefreshJWT };
+
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+
+const authenticateGoogleJWT = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+
+      return errorController('Missing Google token', 400, next);
+
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    req.user = {
+      name: payload.name,
+      email: payload.email,
+      picture: payload.picture,
+      google_id: payload.sub,
+    };
+
+    next();
+  } catch (error) {
+    
+    return errorController('Error verifying Google token', 401, next);
+  }
+};
+
+
+module.exports = { authenticateJWT , authenticateRefreshJWT, authenticateGoogleJWT};

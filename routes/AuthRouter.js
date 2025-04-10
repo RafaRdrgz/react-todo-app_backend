@@ -1,7 +1,7 @@
 const express = require('express');
 const { errorController } = require('../controllers/errorController');
-const { loginUser, logoutUser, newAccessToken } = require('../controllers/authController');
-const {  authenticateJWT,authenticateRefreshJWT } = require('../middleware/authMiddleware');
+const { loginUser, logoutUser, newAccessToken, googleUser } = require('../controllers/authController');
+const {  authenticateJWT, authenticateRefreshJWT, authenticateGoogleJWT } = require('../middleware/authMiddleware');
 
 
 const AuthRouter = express.Router(); // Inicializamos el router
@@ -14,7 +14,7 @@ AuthRouter.post('/login', async (req, res, next) => {
 
     try {
 
-        const {accessToken, refreshToken } = await loginUser(email,password,next);
+        const { accessToken, refreshToken } = await loginUser(email,password,next);
 
         //Retornamos al frontend ambos tokens
         return res.json({ accessToken, refreshToken });
@@ -25,6 +25,31 @@ AuthRouter.post('/login', async (req, res, next) => {
         return errorController('Error en el servidor', 500, next);
 
     }
+});
+
+
+//Continuar con google
+
+AuthRouter.post('/continuewith-google',authenticateGoogleJWT, async (req, res, next) =>{
+
+
+    try {
+
+        const {name, email, google_id } = req.user;
+    
+        // Buscar si ya existe el usuario
+
+
+        const { accessToken, refreshToken } = await googleUser(name, email, google_id, next);
+
+        //Retornamos al frontend ambos tokens
+        return res.json({ accessToken, refreshToken });
+
+    } catch (error) {
+        console.error('Google Login error:', error);
+        return errorController('Google login error', 500, next);
+    }
+
 });
 
 
@@ -42,6 +67,9 @@ AuthRouter.post('/logout', authenticateJWT , async (req, res, next) => {
     } catch (error) { return errorController('Error al cerrar sesión', 500, next); }
 
 });
+
+
+
 
 
 //Refrescar Access Token
