@@ -96,6 +96,7 @@ const authenticateGoogleJWT = async (req, res, next) => {
   try {
     const { token } = req.body;
 
+    console.log(GOOGLE_CLIENT_ID);
     if (!token) {
 
       return errorController('Missing Google token', 400, next);
