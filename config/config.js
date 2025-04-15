@@ -8,9 +8,9 @@ module.exports = {
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-  DB_USER: process.env.DB_USER,
-  DB_PASSWORD: process.env.DB_PASSWORD,
-  DB_HOST: process.env.DB_HOST,
-  DB_NAME: process.env.DB_NAME,
-  DB_PORT: process.env.DB_PORT || 5432
+  PG_USER: process.env.PG_USER,
+  PG_PASSWORD: process.env.PG_PASSWORD,
+  PG_HOST: process.env.PG_HOST,
+  PG_NAME: process.env.PG_NAME,
+  PG_PORT: process.env.PG_PORT || 5432
 };

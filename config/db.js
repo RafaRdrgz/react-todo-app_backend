@@ -1,14 +1,14 @@
-const { DB_HOST, DB_USER, DB_NAME, DB_PASSWORD, DB_PORT } = require('./config'); // Importamos las variables de entorno necesarias
+const { PG_HOST, PG_USER, PG_NAME, PG_PASSWORD, PG_PORT } = require('./config'); // Importamos las variables de entorno necesarias
 const { Pool } = require('pg'); // Importamos Pool desde pg para manejar la conexión a la DB
 
 
 // Configuramos la conexión usando las variables de entorno
 const pool = new Pool({
-  user: DB_USER,
-  host: DB_HOST,
-  database: DB_NAME,
-  password: DB_PASSWORD,
-  port: DB_PORT,
+  user: PG_USER,
+  host: PG_HOST,
+  database: PG_NAME,
+  password: PG_PASSWORD,
+  port: PG_PORT,
   ssl: {
     rejectUnauthorized: false
   }
