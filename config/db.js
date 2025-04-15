@@ -1,4 +1,4 @@
-const { DATABASE_URL } = require('./config'); // Importamos las variables de entorno necesarias
+const { DB_HOST, DB_USER, DB_NAME, DB_PASSWORD, DB_PORT } = require('./config'); // Importamos las variables de entorno necesarias
 const { Pool } = require('pg'); // Importamos Pool desde pg para manejar la conexión a la DB
 
 
