@@ -11,7 +11,13 @@ const TaskRouter = require('./routes/TaskRouter'); // Importamos las rutas de ta
 const app = express();
 const port = PORT; //Variable de entorno para el puerto desde config.js
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://rafardrgz.github.io"
+  ],
+  credentials: true
+}));
 app.use(express.json()); // Para poder leer JSON en las peticiones
 
 //Rutas con prefijo /api
