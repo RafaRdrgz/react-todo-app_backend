@@ -9,8 +9,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # Environment files
+.env_local
 .env
-
 # Operating System files
 .DS_Store
 Thumbs.db

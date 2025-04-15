@@ -1,15 +1,18 @@
-const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT } = require('./config'); // Importamos las variables de entorno necesarias
+const { DATABASE_URL } = require('./config'); // Importamos las variables de entorno necesarias
 const { Pool } = require('pg'); // Importamos Pool desde pg para manejar la conexión a la DB
 
 
 // Configuramos la conexión usando las variables de entorno
 const pool = new Pool({
-    user: DB_USER, // Usuario de la base de datos
-    host: DB_HOST, // Dirección del servidor PostgreSQL
-    database: DB_NAME, // Nombre de la base de datos
-    password: DB_PASSWORD, // Contraseña de la base de datos
-    port: DB_PORT || 5432, // Puerto del servidor PostgreSQL (default es 5432)
-  });
+  user: DB_USER,
+  host: DB_HOST,
+  database: DB_NAME,
+  password: DB_PASSWORD,
+  port: DB_PORT,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
   
 // Verificamos que la conexión esté funcionando
